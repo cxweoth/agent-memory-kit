@@ -1,0 +1,1290 @@
+{
+ "title": "Memory System Specification",
+ "sub": "Episodic / Semantic / Procedural / Tools",
+ "sections": [
+  {
+   "name": "What memory is",
+   "path": "Definitions and principles",
+   "tab": "Structure",
+   "sub": "What memory is",
+   "exclusive": true,
+   "blocks": [
+    {
+     "kind": "ul",
+     "h3": "Memory and its owner",
+     "items": [
+      "<strong>Memory</strong>: the process involved in the acquisition, storage, and retrieval of information.",
+      "<strong>The memory owner is the agent, not the user.</strong> The agent stores the user's information in its own memory area, and uses that memory to help the user."
+     ]
+    },
+    {
+     "kind": "table",
+     "h3": "The three kinds of memory",
+     "cols": [
+      "Kind",
+      "Definition",
+      "One-line test",
+      "How to look it up"
+     ],
+     "rows": [
+      [
+       "<strong>Episodic</strong>",
+       "memory of personally experienced events, bound to a specific time and place.",
+       "Things that happened. <strong>Never rewritten</strong>",
+       "Browse by time"
+      ],
+      [
+       "<strong>Semantic</strong>",
+       "general knowledge of facts and concepts, independent of when and where it was acquired.",
+       "Facts as they are now. <strong>Gets rewritten</strong>",
+       "Find the file by tag, then the entry by heading"
+      ],
+      [
+       "<strong>Procedural</strong>",
+       "memory of how to perform an action, acquired gradually through repetition, expressed by doing rather than by recalling.",
+       "How to do things. Compiled from repeated failure episodics, or derived from semantic facts",
+       "Loaded at boot, or triggered"
+      ]
+     ]
+    },
+    {
+     "kind": "ul",
+     "h3": "How memory flows",
+     "diagram": "<svg class=\"dg\" viewBox=\"0 0 340 392\" role=\"img\" aria-label=\"How memory flows: conversation events are extracted into episodic; episodic is extracted into semantic and counted into procedural; semantic is derived into procedural; the user can also set procedural directly.\"><defs><marker id=\"dg-ah\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto\"><path class=\"dg-ah\" d=\"M0,0 L10,5 L0,10 z\"/></marker></defs><path class=\"dg-e\" d=\"M110,46 V94\" marker-end=\"url(#dg-ah)\"/><path class=\"dg-e\" d=\"M110,146 V204\" marker-end=\"url(#dg-ah)\"/><path class=\"dg-e\" d=\"M110,256 V318\" marker-end=\"url(#dg-ah)\"/><path class=\"dg-e\" d=\"M200,121 H246 V336 H202\" marker-end=\"url(#dg-ah)\"/><path class=\"dg-e\" d=\"M234,366 H202\" marker-end=\"url(#dg-ah)\"/><text class=\"dg-t dg-l\" x=\"120\" y=\"75\">extract</text><text class=\"dg-t dg-l\" x=\"120\" y=\"180\">extract</text><text class=\"dg-t dg-l\" x=\"120\" y=\"292\">derive</text><text class=\"dg-t dg-l\" x=\"254\" y=\"232\">count</text><rect class=\"dg-s\" x=\"30\" y=\"10\" width=\"160\" height=\"36\" rx=\"18\"/><text class=\"dg-t\" x=\"110\" y=\"33\" text-anchor=\"middle\">Conversation events</text><rect class=\"dg-n\" x=\"20\" y=\"96\" width=\"180\" height=\"50\" rx=\"5\"/><text class=\"dg-t dg-m\" x=\"110\" y=\"117\" text-anchor=\"middle\">1_episodic/</text><text class=\"dg-t dg-d\" x=\"110\" y=\"135\" text-anchor=\"middle\">what happened</text><rect class=\"dg-n\" x=\"20\" y=\"206\" width=\"180\" height=\"50\" rx=\"5\"/><text class=\"dg-t dg-m\" x=\"110\" y=\"227\" text-anchor=\"middle\">2_semantic/</text><text class=\"dg-t dg-d\" x=\"110\" y=\"245\" text-anchor=\"middle\">current facts</text><rect class=\"dg-n\" x=\"20\" y=\"320\" width=\"180\" height=\"60\" rx=\"5\"/><text class=\"dg-t dg-m\" x=\"110\" y=\"346\" text-anchor=\"middle\">3_procedural/</text><text class=\"dg-t dg-d\" x=\"110\" y=\"365\" text-anchor=\"middle\">how to do things</text><rect class=\"dg-s\" x=\"234\" y=\"348\" width=\"102\" height=\"36\" rx=\"18\"/><text class=\"dg-t\" x=\"285\" y=\"371\" text-anchor=\"middle\">Set by user</text></svg>",
+     "items": [
+      "What happens in a conversation first becomes <strong>Episodic</strong>; facts without a time, extracted from Episodic, become <strong>Semantic</strong>; repeated failures, or practices derived from facts, become <strong>Procedural</strong>. The user can also set a Procedural directly, on the spot.",
+      "Episodic is the ultimate source of all memory. Memory always moves forward in time, so this design cannot produce a cycle.",
+      "The threshold for each path is in the five entry rules at the top of the rule table (rules 1–5)."
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Memory location",
+   "path": "Where memory lives, and each agent's own settings",
+   "tab": "Structure",
+   "sub": "Memory location",
+   "exclusive": true,
+   "blocks": [
+    {
+     "kind": "ul",
+     "h3": "Where things live",
+     "items": [
+      "<code>1_episodic/consolidated/</code>: episodics that have been fully extracted. No subfolders below it.",
+      "<code>2_semantic/history/</code>, <code>3_procedural/history/</code>: old versions and retired files. Flat, with no subfolders; file name <code>&lt;original-name&gt;_&lt;YYYY-MM-DD&gt;.md</code>. <strong>At most one copy per file per day, holding the file as it was before today's first change</strong>; later changes on the same day are not saved again, because git has the intermediate states. A retired file moves in whole, overwriting any file with the same name.",
+      "<code>tools/</code>: the memory tools.",
+      "<code>data/</code>: <strong>not memory</strong>; raw material."
+     ],
+     "tree": "<b>memory/</b>\n<span class=\"lv\">├──</span> <b>1_episodic/</b>\n<span class=\"lv\">│   └──</span> consolidated/\n<span class=\"lv\">├──</span> <b>2_semantic/</b>\n<span class=\"lv\">│   └──</span> history/\n<span class=\"lv\">├──</span> <b>3_procedural/</b>\n<span class=\"lv\">│   └──</span> history/\n<span class=\"lv\">└──</span> <b>tools/</b>\n<b>data/</b>"
+    },
+    {
+     "kind": "table",
+     "h3": "Each agent's own MEMORY_ARCH.md",
+     "cols": [
+      "What",
+      "Content"
+     ],
+     "rows": [
+      [
+       "Memory owner",
+       "What this agent is called, and who its user is"
+      ],
+      [
+       "Tag vocabulary",
+       "One row per tag, saying \"what kinds of questions route here\""
+      ],
+      [
+       "Error sources",
+       "The names allowed in <code>Errors caught by</code>, matching <code>SOURCES</code> in <code>memory/tools/tally.py</code> exactly"
+      ],
+      [
+       "Paths",
+       "Where this agent's memory root is; the spec copy is in <code>memory/spec/</code>"
+      ]
+     ],
+     "items": [
+      "<strong>This spec covers what all agents share; <code>MEMORY_ARCH.md</code> holds only the settings that belong to this agent alone.</strong> Anything the spec already says is not written a second time: point to <code>memory/spec/</code> instead.",
+      "Rules that belong only to this agent do not go in <code>MEMORY_ARCH.md</code>; they go in the agent's own <code>3_procedural/</code>, marked <code>Scope: this-user</code> or <code>Scope: this-role</code>."
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Rules",
+   "path": "Read, Add, Update, Delete",
+   "tab": "Rules",
+   "sub": "Rule table",
+   "exclusive": true,
+   "blocks": [
+    {
+     "kind": "rules",
+     "h3": "Rule table",
+     "rules": [
+      {
+       "text": "<strong>Conversation events → <code>1_episodic/</code>: extract</strong>. Write it when it happens; waiting too long is hoarding. One event per episodic, and one conversation can produce several; store a summary, not the transcript. Whether to record it at all follows the Add rules.",
+       "types": [
+        "Episodic"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "before-adding-memory.md",
+       "tools": [
+        "memory_check.py"
+       ],
+       "no": 1
+      },
+      {
+       "text": "<strong><code>1_episodic/</code> → <code>2_semantic/</code>: extract; the only way in.</strong> An event yields facts that carry no time; when a semantic fact changes, it is necessarily because some episodic happened.",
+       "types": [
+        "Semantic"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "before-adding-memory.md",
+       "tools": [],
+       "no": 2
+      },
+      {
+       "text": "<strong><code>1_episodic/</code> → <code>3_procedural/</code>: count.</strong> Compiled from repeated failures: <strong>the same kind of error twice or more</strong>; a one-off error goes only into <code>1_episodic/</code>.",
+       "types": [
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "before-adding-memory.md",
+       "tools": [],
+       "no": 3
+      },
+      {
+       "text": "<strong><code>2_semantic/</code> → <code>3_procedural/</code>: derive.</strong> From a known fact, infer \"so this is what to do\". No repetition is needed, but it <strong>must name the semantic fact it is derived from</strong>.",
+       "types": [
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "before-adding-memory.md",
+       "tools": [],
+       "no": 4
+      },
+      {
+       "text": "<strong>Set directly by the user → <code>3_procedural/</code></strong>. The user says on the spot how something should be done, and the agent records it. No repetition or derivation is needed, but <strong>the user's exact words and the date must be quotable</strong> (they live in the upstream episodic); if they cannot be quoted, this way in does not apply. <strong>The exact words live only in that episodic, never in the rule file</strong>; the rule file keeps only the action.",
+       "types": [
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "before-adding-memory.md",
+       "tools": [],
+       "no": 5
+      },
+      {
+       "text": "<strong>Each thing has exactly one home and is said exactly once.</strong> Anywhere else that needs it points to that home.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Boot",
+       "ops": [
+        "Read",
+        "Add",
+        "Update",
+        "Delete"
+       ],
+       "file": "one-home-per-thing.md",
+       "tools": [],
+       "no": 6
+      },
+      {
+       "text": "<strong>Episodics are evidence, not retrieval targets</strong>: only <code>Upstream</code> points to them, and they are browsed by time; having to browse <code>1_episodic/consolidated/</code> often means extraction was not done well. <strong>The process stays in the episodic; upper layers keep only conclusions and inputs.</strong> Wording that matters, such as definitions and agreements, is kept verbatim, without naming who said it.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Boot",
+       "ops": [
+        "Read",
+        "Add",
+        "Update",
+        "Delete"
+       ],
+       "file": "one-home-per-thing.md",
+       "tools": [],
+       "no": 7
+      },
+      {
+       "text": "<strong>Memory takes priority over your own defaults</strong>, including usage learned in training or from the literature. When a term does not fit, first check which side deviates; <strong>if a search finds nothing, say it found nothing</strong>, and do not fill the gap yourself. <strong>Stopping as soon as you find something that supports what you already said is also not allowed</strong>: you search to disprove yourself, not to reinforce yourself.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Boot",
+       "ops": [
+        "Read"
+       ],
+       "file": "reading-memory.md",
+       "tools": [],
+       "no": 8
+      },
+      {
+       "text": "<strong>Read every line on its own once</strong>: if it only makes sense after scrolling up or rebuilding the context, rewrite it. <strong>Codes</strong> (ad-hoc labels and numbers) are the most common case: use the name directly; if a number is really needed, define it in the same paragraph or the same table.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Boot",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "self-contained-writing.md",
+       "tools": [],
+       "no": 9
+      },
+      {
+       "text": "<strong>Paths</strong>: wrap paths that currently resolve in backticks, and leave paths that do not resolve unwrapped; use angle brackets for templates and a glob for a whole batch; write paths in full, never with <code>../</code>.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Boot",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "self-contained-writing.md",
+       "tools": [
+        "memory_check.py"
+       ],
+       "no": 10
+      },
+      {
+       "text": "<strong>A number never appears alone</strong>: it carries its ruler (what was measured, the denominator, which span it covers, who counted it and when; if it comes from the same source as nearby numbers, write \"same source\"). Counts, ratios, durations, amounts, step counts, and seeds need a ruler; dates, line numbers, hashes, paths, and rule numbers do not. <strong>A counted quantity must be able to say which ones</strong>: give the names, or point to a list that resolves.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "writing-memory-common.md",
+       "tools": [],
+       "no": 11
+      },
+      {
+       "text": "<strong>State the cause and effect</strong>; do not make a claim absolute just so the sentence reads well. Every time you write \"cannot\", \"only\", or \"impossible\", stop and ask once: is this really absolute?",
+       "types": [
+        "Common"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "writing-memory-common.md",
+       "tools": [],
+       "no": 12
+      },
+      {
+       "text": "Content that will be looked up goes in <strong>tables</strong>; content that must be understood goes in <strong>sections</strong>. After a label, write an <strong>ASCII colon followed by a space</strong> (<code>: </code>), the same as in the Summary. The tools accept both the ASCII colon and the full-width colon.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "writing-memory-common.md",
+       "tools": [
+        "tally.py",
+        "memory_check.py",
+        "gen_index.py",
+        "gen_dispatch.py"
+       ],
+       "no": 13
+      },
+      {
+       "text": "<strong>Private never goes to a remote; Public may.</strong> Private files are still tracked in local git as usual; <code>memory_check.py</code> reports every Private file when the repo has a remote.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "writing-memory-common.md",
+       "tools": [
+        "memory_check.py"
+       ],
+       "no": 14
+      },
+      {
+       "text": "<strong>Ask two questions before keeping anything</strong>: In what future situation will it be needed, and what cue will be used to find it then? Would deleting it cause an error, or only lose a reminder? Keep it only if both questions have answers. Ask this of every line and every section.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "before-adding-memory.md",
+       "tools": [],
+       "no": 15
+      },
+      {
+       "text": "<strong>No deletion by default.</strong> Append-only and reversible changes are made directly, then you report which files and which lines were touched; deleting, renaming, moving, or marking as obsolete always starts with a list and waits for the user to confirm (which file, how many lines, why it is obsolete, where the content still lives). The only thing that may be deleted directly is a superseded old statement in <code>2_semantic/</code>, and each deleted sentence is listed in the commit message.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Delete"
+       ],
+       "file": "no-delete-by-default.md",
+       "tools": [],
+       "no": 16
+      },
+      {
+       "text": "<strong>Before anything is deleted, the original text must have a home as evidence</strong>, pointed to in the list; \"it has already been extracted\" is not a reason. Retired Semantic and Procedural files move in whole into that layer's <code>2_semantic/history/</code> or <code>3_procedural/history/</code>; content cut from a rule file is written into the day's <code>1_episodic/</code>.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Delete"
+       ],
+       "file": "no-delete-by-default.md",
+       "tools": [],
+       "no": 17
+      },
+      {
+       "text": "<strong>Do not decide whether to keep a file you cannot open</strong> (PDFs, images, binaries). Say \"I have not read it\" first, and let the user decide.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Delete"
+       ],
+       "file": "no-delete-by-default.md",
+       "tools": [],
+       "no": 18
+      },
+      {
+       "text": "<strong>Before changing or deleting something, find what points to it and change those too.</strong> When a definition changes, check downstream: <code>Prerequisites</code> depend on each other in order, so re-read every later prerequisite and every <code>Derived</code> definition to see whether it still holds; when a semantic entry changes, re-evaluate the procedurals derived from it; evidence in episodics that points to the old structure is allowed to break, and no mapping table is added for it.",
+       "types": [
+        "Semantic",
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Update",
+        "Delete"
+       ],
+       "file": "editing-semantic-and-rule-files.md",
+       "tools": [],
+       "no": 19
+      },
+      {
+       "text": "When you read something wrong, outdated, or duplicated, <strong>run Update or Delete on the spot</strong>; do not work around it.",
+       "types": [
+        "Semantic",
+        "Procedural"
+       ],
+       "layer": "Boot",
+       "ops": [
+        "Read"
+       ],
+       "file": "reading-memory.md",
+       "tools": [],
+       "no": 20
+      },
+      {
+       "text": "<strong>Upstream comes first.</strong> Memory that cannot name its upstream is not allowed: it was made up on a hunch.",
+       "types": [
+        "Semantic",
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "before-adding-memory.md",
+       "tools": [
+        "memory_check.py"
+       ],
+       "no": 21
+      },
+      {
+       "text": "<strong>Edit in place, and only the lines that need it.</strong> Do not write a new entry next to the old one, do not leave tombstones such as \"deleted\" or \"moved to\", and do not reorder things while you are there; how a superseded old statement is removed follows the Semantic Delete rule. <strong>After editing</strong>: update the Summary too (<code>Brief</code>, <code>Admission</code>, <code>Updated</code>); only on the first change to this file today, save the whole old version into that layer's <code>2_semantic/history/</code> or <code>3_procedural/history/</code> (one copy per file per day; if that name already exists, do not save again); for rule files, also run <code>gen_dispatch.py</code> and <code>gen_index.py</code>.",
+       "types": [
+        "Semantic",
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Update"
+       ],
+       "file": "editing-semantic-and-rule-files.md",
+       "tools": [
+        "gen_dispatch.py",
+        "gen_index.py"
+       ],
+       "no": 22
+      },
+      {
+       "text": "<strong>A check and a semantic entry point to each other.</strong> The check's <code>Upstream</code> names the semantic entry it is derived from, and that entry's <code>Before use</code> points back to the check. The semantic fact a check relies on is not rewritten inside the check.",
+       "types": [
+        "Semantic",
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "rule-files-hold-only-rules.md",
+       "tools": [
+        "memory_check.py"
+       ],
+       "no": 23
+      },
+      {
+       "text": "<strong>When the sweep line is due, first write the day's episodics, and only then answer the user.</strong> If you do not see the sweep line, run <code>python3 memory/tools/UserPromptSubmit/sweep_due.py</code> yourself; exit code 1 means it is due. Order: scan what happened in that span, one episodic per event, recording user decisions per <code>3_procedural/decision-attribution.md</code> → <code>python3 memory/tools/gen_index.py</code> → check for spec updates per <code>3_procedural/sweep-check-spec-updates.md</code> → finally stamp with <code>sweep_due.py --done</code>. The order may not be changed, and an empty day gets stamped too.",
+       "types": [
+        "Episodic"
+       ],
+       "layer": "Boot",
+       "ops": [
+        "Add"
+       ],
+       "file": "sweep-write-todays-episodics.md",
+       "tools": [
+        "sweep_due.py",
+        "gen_index.py"
+       ],
+       "no": 24
+      },
+      {
+       "text": "<strong>A sweep line that spans more than one day is a cold start</strong>: write only what the evidence supports, and mark it as reconstructed from evidence. You are filling in a record, not making a judgment.",
+       "types": [
+        "Episodic"
+       ],
+       "layer": "Boot",
+       "ops": [
+        "Add"
+       ],
+       "file": "sweep-write-todays-episodics.md",
+       "tools": [],
+       "no": 25
+      },
+      {
+       "text": "<strong>When the user makes a decision from options the agent offered</strong>, record the options considered, the user's reasons, the assumptions relied on, and one attribution line.",
+       "types": [
+        "Episodic"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "decision-attribution.md",
+       "tools": [],
+       "no": 26
+      },
+      {
+       "text": "<strong>Episodics are never rewritten.</strong> An episodic records what was true at the time, and is allowed to go out of date.",
+       "types": [
+        "Episodic"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Update"
+       ],
+       "file": "writing-an-episodic.md",
+       "tools": [],
+       "no": 27
+      },
+      {
+       "text": "<strong>Whether an episodic is consolidated depends on whether it has been fully extracted, not on whether the work is done.</strong> First extract whatever the upper layers have not yet captured (thresholds per the entry rules 1–5), then move it: <code>python3 memory/tools/mem_mv.py 1_episodic/&lt;file&gt;.md 1_episodic/consolidated/&lt;file&gt;.md --apply</code>.",
+       "types": [
+        "Episodic"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Update"
+       ],
+       "file": "consolidating-episodics.md",
+       "tools": [
+        "mem_mv.py"
+       ],
+       "no": 28
+      },
+      {
+       "text": "<strong>Every episodic has <code>Errors caught by</code>.</strong> Source names must match <code>SOURCES</code> in <code>memory/tools/tally.py</code> exactly; an item that does not match is not counted. <code>unrecorded</code> is not zero: it was never measured, so it is left out of the denominator.",
+       "types": [
+        "Episodic"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "writing-an-episodic.md",
+       "tools": [
+        "tally.py"
+       ],
+       "no": 29
+      },
+      {
+       "text": "<strong>Finding something in the semantic layer</strong>: <code>Tags</code> and <code>Open when</code> find the file, and the heading finds the entry; read only that entry, from the top down, and stop as soon as you can answer. Read, Add, Update, and Delete all start this way.",
+       "types": [
+        "Semantic"
+       ],
+       "layer": "Boot",
+       "ops": [
+        "Read"
+       ],
+       "file": "reading-memory.md",
+       "tools": [],
+       "no": 30
+      },
+      {
+       "text": "<strong>Before using an entry to do something</strong>: first open the checks its <code>Before use</code> points to; do not cite anything marked <code>unverified</code> as confirmed; if the entry has a <code>Changes when</code> condition, first check whether that condition has been met.",
+       "types": [
+        "Semantic"
+       ],
+       "layer": "Boot",
+       "ops": [
+        "Read"
+       ],
+       "file": "reading-memory.md",
+       "tools": [],
+       "no": 31
+      },
+      {
+       "text": "<strong>Mark only exceptions.</strong> Reliability: a <code>Source</code> you have not verified yourself is written as <code>unverified</code>. Type: the default is fact and is not marked; a derived entry writes <code>Inputs</code>, and a judgment writes <code>Premises</code>. Invalidation: write <code>Changes when</code> only for entries that depend on a decision or external state that can change.",
+       "types": [
+        "Semantic"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "writing-semantic-files.md",
+       "tools": [],
+       "no": 32
+      },
+      {
+       "text": "<strong>Find the home before extracting</strong>: list every file on the same topic, read from the newest, and let the newest win on conflicts; if an entry already exists, use Update instead of opening a second one; content goes into a file only if it passes that file's <code>Admission</code>, and if it does not, find its real home. <strong>If there is no home, a file is missing</strong>: create one, or ask the user.",
+       "types": [
+        "Semantic"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "before-extracting-semantic.md",
+       "tools": [],
+       "no": 33
+      },
+      {
+       "text": "<strong>The atom of semantic memory is one fact, not one file.</strong> A file is only a container for facts that are read together and have <strong>the same lifespan</strong>: facts that always apply and facts that expire do not share a file.",
+       "types": [
+        "Semantic"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "writing-semantic-files.md",
+       "tools": [],
+       "no": 34
+      },
+      {
+       "text": "<strong>Keep it short, and store only facts that are true now.</strong> Semantic memory gets replaced by newer facts, so however complete the details are, they will be swapped out. Unfinished work counts too: record only that it \"exists and is unresolved\", and put the day it will be handled on the calendar; do not open a separate to-do list, and do not add a new layer.",
+       "types": [
+        "Semantic"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "writing-semantic-files.md",
+       "tools": [],
+       "no": 35
+      },
+      {
+       "text": "<strong>The semantic layer is flat, and classification is by tag only</strong>: many-to-many, no hierarchy among tags, used only for Semantic. The tag vocabulary is in your own <code>MEMORY_ARCH.md</code>, and each tag says \"what kinds of questions route here\". The <code>agent</code> tag marks the agent itself (memory system, tools, runtime environment) and never shares a file with a tag from the user's domain.",
+       "types": [
+        "Semantic"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "writing-semantic-files.md",
+       "tools": [
+        "memory_check.py"
+       ],
+       "no": 36
+      },
+      {
+       "text": "<strong>Hard limits for semantic files</strong>: at most 200 lines per file (the number is <code>MAX_LINES</code> in <code>memdoc.py</code>); beyond that, split it or trim it. Fill in every Summary field per the Summary table; entries use only the fields in the \"Fields allowed under an entry\" table; inside <code>## Memory Content</code>, dates are allowed only in the <code>Confirmed</code> field and in episodic paths in <code>Source</code>, because a date in a sentence is narrative; leave no empty fields: omit a field with no content entirely, and do not write \"none\" as a placeholder.",
+       "types": [
+        "Semantic"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "writing-semantic-files.md",
+       "tools": [
+        "memdoc.py",
+        "memory_check.py"
+       ],
+       "no": 37
+      },
+      {
+       "text": "<strong>When you carry out a rule, record it in that episodic's <code>Procedurals used</code></strong>. Counts are not written in the rule file; tally accumulates them into <code>3_procedural/usage.json</code>. The condition for +1 is confirming that you actually carried the rule out, not that you read the file.",
+       "types": [
+        "Procedural"
+       ],
+       "layer": "Boot",
+       "ops": [
+        "Read",
+        "Update"
+       ],
+       "file": "reading-memory.md",
+       "tools": [
+        "tally.py"
+       ],
+       "no": 38
+      },
+      {
+       "text": "<strong>Every rule file must be reachable</strong>: from <code>CLAUDE.md</code>, or from some semantic entry's <code>Before use</code>. The more often a rule is used, the earlier it goes.",
+       "types": [
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "rule-files-hold-only-rules.md",
+       "tools": [
+        "memory_check.py"
+       ],
+       "no": 39
+      },
+      {
+       "text": "<strong>Moving to another system</strong>: take every rule file marked <code>Scope: universal</code>, and drop the <code>Upstream</code> field.",
+       "types": [
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "rule-files-hold-only-rules.md",
+       "tools": [],
+       "no": 40
+      },
+      {
+       "text": "<strong>A rule file holds only what must be followed at the moment of acting and cannot be re-derived.</strong> Scenario test: at the moment the action is about to happen, what do you need in front of you? Something that would not change your next action even if you knew it is not a rule; arbitrary conventions (formats, constants, thresholds) must be kept, and conclusions that can be re-derived are not kept. One rule per file, one point per line, imperative mood, no history. <strong>Exception</strong>: the few rules marked <code>Scope: this-role</code> that live in the boot layer are always loaded together, and splitting them would help neither finding nor counting them, so they may share one file whose <code>Brief</code> says which kind of action it covers; triggered-layer rules may not be merged, because a triggered-layer rule is found by its file name.",
+       "types": [
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "rule-files-hold-only-rules.md",
+       "tools": [],
+       "no": 41
+      },
+      {
+       "text": "<strong>Examples in rule files use no project names, personal names, or private matters</strong>; always say \"the user\" and \"the agent\". A rule that is itself about that project or role is exempt once it is marked <code>Scope: this-role</code>.",
+       "types": [
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "rule-files-hold-only-rules.md",
+       "tools": [],
+       "no": 42
+      },
+      {
+       "text": "<strong>What becomes a check</strong>: a \"check this before use\" derived from a semantic fact, and a ruling the agent has made. Checks go in the triggered layer; if the agent has a systematic bias on the topic, name the bias and put it first, and mark that file <code>Scope: this-role</code>.",
+       "types": [
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "rule-files-hold-only-rules.md",
+       "tools": [],
+       "no": 43
+      },
+      {
+       "text": "<strong>When to delegate to a subagent</strong>: delegate changes that span several files, extracting new facts from raw material (transcripts, source code, literature), or reformatting a whole file (migration); appending a single entry or changing a few lines in one file you do yourself. Even when you do it yourself, review it by the rules that follow.",
+       "types": [
+        "Semantic",
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "delegating-memory-edits.md",
+       "tools": [],
+       "no": 44
+      },
+      {
+       "text": "<strong>A subagent runs in an isolated workspace</strong> (a git worktree) and cannot touch the current workspace; clean the workspace up as soon as its work is merged or abandoned, but never while the subagent is still running.",
+       "types": [
+        "Semantic",
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "delegating-memory-edits.md",
+       "tools": [],
+       "no": 45
+      },
+      {
+       "text": "<strong>A subagent's report splits \"things the old file did not have\" into two kinds</strong>: those forced by the format (fields and headings the new format necessarily produces) need no question; every new claim in content is <strong>listed, and you stop to ask the user about each one</strong>. The split is mechanical: only the fixed field positions count as format, and anything written elsewhere is a new claim. A user who has not replied yet does not block the work: put the pending items on a list, merge what has been verified, and move on to the next file.",
+       "types": [
+        "Semantic",
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "delegating-memory-edits.md",
+       "tools": [],
+       "no": 46
+      },
+      {
+       "text": "<strong>For every semantic file a subagent changes, its report includes a \"could be shortened\" list</strong> that only lists and never trims, with four things per item: which passage (a verbatim anchor, extracted with a command rather than typed by hand), how many lines, why it could be shortened, and what would be lost by shortening it.",
+       "types": [
+        "Semantic",
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "delegating-memory-edits.md",
+       "tools": [],
+       "no": 47
+      },
+      {
+       "text": "<strong>Reviewing a change starts with four mechanical checks, the same for a subagent's output and for your own edits</strong>, and judgment does not start until all four are done: every <code>-</code> line in the diff is accounted for in the report | each claimed source matches the original | lint and checks were run and their output is pasted | nothing in <code>1_episodic/consolidated/</code> was touched. Only then review the format item by item.",
+       "types": [
+        "Semantic",
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "delegating-memory-edits.md",
+       "tools": [],
+       "no": 48
+      },
+      {
+       "text": "<strong>Feedback to a subagent goes only into its prompt</strong>; while the loop runs, do not change a single character of the rule files, the spec copy, or the subagent's definition file. Give a whole section for comparison, both sides of it: \"current\", printed with a command and pasted, and \"change to\", written out as the full revised section; giving half a sentence is a violation.",
+       "types": [
+        "Semantic",
+        "Procedural"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add",
+        "Update"
+       ],
+       "file": "delegating-memory-edits.md",
+       "tools": [],
+       "no": 49
+      },
+      {
+       "text": "<strong>On the sweep line, check for spec updates.</strong> Every release of the kit (<code>https://github.com/cxweoth/agent-memory-kit</code>) raises the number in its <code>VERSION</code> file by 1 and adds a <code>&lt;kit&gt;/CHANGELOG.md</code> entry saying which sections changed. On the sweep line, run <code>git pull</code> in your clone of the kit and compare the kit's <code>VERSION</code> with the first line of <code>memory/spec/VERSION</code>. If they differ: read every <code>&lt;kit&gt;/CHANGELOG.md</code> entry newer than your version and do what each entry marked <strong>Action required</strong> says; then rerun <code>gen_spec.py</code>, carry rule-file changes into <code>3_procedural/</code> as Add or Update per the rules, and copy the tools with <code>gen_spec.py --get</code> (review the diff before running them). The spec copy is always generated and never edited by hand; the kit does not push updates, the agent comes to read them.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Read",
+        "Update"
+       ],
+       "file": "sweep-check-spec-updates.md",
+       "tools": [
+        "gen_spec.py",
+        "memory_check.py"
+       ],
+       "no": 50
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Rule files",
+   "path": "3_procedural/",
+   "tab": "Rules",
+   "sub": "Rule files",
+   "exclusive": true,
+   "blocks": [
+    {
+     "kind": "rulefiles",
+     "h3": "Rule files generated from the rule table"
+    }
+   ]
+  },
+  {
+   "name": "Skeleton and Summary",
+   "path": "The three kinds side by side",
+   "tab": "Structure",
+   "sub": "Memory format",
+   "exclusive": true,
+   "blocks": [
+    {
+     "kind": "ul",
+     "h3": "The skeleton of every file",
+     "tree": "<b># Title</b>\n<span class=\"lv\">├</span> <b>## Memory Summary</b>    fields: see the table below\n<span class=\"lv\">└</span> <b>## Memory Content</b>     Semantic splits it into entries: see the semantic file skeleton",
+     "items": [
+      "Level 2 has only <strong>Memory Summary</strong> and <strong>Memory Content</strong>, in that order; no subsection may appear before <code>## Memory Content</code>."
+     ]
+    },
+    {
+     "kind": "table",
+     "h3": "The Summary at the top of every file",
+     "cols": [
+      "Field",
+      "Used in",
+      "Value"
+     ],
+     "rows": [
+      [
+       "Visibility",
+       "All three",
+       "Public / Private"
+      ],
+      [
+       "Tags",
+       "Semantic",
+       "Which domains this file belongs to, comma-separated. The vocabulary is in <code>MEMORY_ARCH.md</code>"
+      ],
+      [
+       "Brief",
+       "All three",
+       "One sentence. Episodic: what happened; Semantic: what this file holds; Procedural: what this rule says to do"
+      ],
+      [
+       "Admission",
+       "Semantic",
+       "What may be written into this file, and what may not"
+      ],
+      [
+       "Open when",
+       "Semantic",
+       "Which tasks should make you open this file"
+      ],
+      [
+       "Occurred",
+       "Episodic",
+       "<code>YYYY-MM-DD HH:MM–HH:MM</code> plus the time zone"
+      ],
+      [
+       "Transcript",
+       "Episodic",
+       "A path, marked \"may be stale\". <strong>Never usable as a source</strong>"
+      ],
+      [
+       "Procedurals used",
+       "Episodic",
+       "Rule file names, possibly several. Accumulated by tally"
+      ],
+      [
+       "Errors caught by",
+       "Episodic",
+       "<code>&lt;source&gt; N, &lt;source&gt; N</code>; no errors: <code>none</code>; filled in after the fact: <code>unrecorded</code>"
+      ],
+      [
+       "Upstream",
+       "Semantic, Procedural",
+       "Which episodics it was extracted from; a Procedural derived from a semantic fact names that entry"
+      ],
+      [
+       "Access",
+       "Procedural",
+       "<strong>Boot</strong>: read at the start of every conversation; lives in <code>CLAUDE.md</code>. <strong>Triggered</strong>: loaded only when a condition in <code>CLAUDE.md</code> holds, or when a semantic entry's <code>Before use</code> points to it; lives in <code>3_procedural/</code>."
+      ],
+      [
+       "Scope",
+       "Procedural",
+       "The deciding question: if a different agent did work for the same person, would this rule still be there? <strong>universal</strong>: yes; it is discipline every agent with this memory system should have. <strong>this-user</strong>: yes, because it exists because of who the user is. <strong>this-role</strong>: no; it exists because of this agent's job, and a different job replaces the whole layer."
+      ],
+      [
+       "Updated",
+       "Semantic, Procedural",
+       "<code>YYYY-MM-DD</code>"
+      ]
+     ],
+     "items": [
+      "For each kind, the field order is the order of this table, from top to bottom."
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Episodic memory",
+   "path": "1_episodic/",
+   "tab": "Structure",
+   "sub": "Memory format",
+   "exclusive": true,
+   "blocks": [
+    {
+     "kind": "ul",
+     "h3": "Files",
+     "items": [
+      "<strong>File name</strong> <code>&lt;YYYY-MM-DD&gt;_&lt;short-title&gt;.md</code>.",
+      "<strong>Location decides the extraction state</strong>: a file in <code>1_episodic/</code> is not yet extracted; a file moved into <code>1_episodic/consolidated/</code> is fully extracted."
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Semantic memory",
+   "path": "2_semantic/",
+   "tab": "Structure",
+   "sub": "Memory format",
+   "exclusive": true,
+   "blocks": [
+    {
+     "kind": "ul",
+     "h3": "File names",
+     "items": [
+      "<strong>The file name is the home of the fact</strong>; the file system guarantees it is unique.",
+      "<strong>A file specific to one project gets the project name as a prefix</strong>, <code>&lt;proj&gt;_&lt;fact&gt;.md</code>; a cross-project file does not, because a prefix would imply it belongs to one project. The prefix is a flat naming convention, not a hierarchy."
+     ]
+    },
+    {
+     "kind": "ul",
+     "h3": "The skeleton of Memory Content",
+     "tree": "<b># Title</b>\n<span class=\"lv\">└</span> <b>## Memory Content</b>\n   <span class=\"lv\">└</span> <b>### Entry name = the term being looked up</b>\n       <span class=\"lv\">├</span> Main definition, or claim\n       <span class=\"lv\">├</span> Fields after the main definition, one <code>* Field: </code> per line; see the table below\n       <span class=\"lv\">└</span> Before use",
+     "items": [
+      "Level 3 is the <strong>entry</strong>, and <strong>its heading is the term being looked up</strong> (e.g. <code>### Empowerment</code>); a fact entry uses the phrase you would search for. <strong>Do not write a category name</strong> (definition, fact, derivation), <strong>and do not write a sentence</strong>: the answer is on the entry's first line, while the heading is the target of pointers and must stay stable.",
+      "<strong>The first line of an entry is the answer</strong> (the main definition or the claim); after it, fields go one per line as <code>* Field: </code>, in the order of the table below. <strong>Only the main definition is required</strong>; any other field with no content is omitted entirely, never left empty.",
+      "<strong>Before use</strong> holds one pointer per line to the checks in <code>3_procedural/</code> derived from this entry. <strong>You see them as soon as you read the entry</strong>, without having to remember to search."
+     ]
+    },
+    {
+     "kind": "table",
+     "h3": "Fields allowed under an entry",
+     "cols": [
+      "Field",
+      "What to write"
+     ],
+     "rows": [
+      [
+       "<code>Prerequisites</code>",
+       "Terms the main definition uses, numbered; a later one may use the earlier ones"
+      ],
+      [
+       "<code>Derived</code>",
+       "Terms derived from the main definition"
+      ],
+      [
+       "<code>Disambiguation</code>",
+       "Outside uses of the same name with a different meaning (e.g. what the literature calls X is called Y in this file)"
+      ],
+      [
+       "<code>Source</code>",
+       "The path to the upstream episodic, or <code>unverified</code>. <strong>An episodic file name carries a date; that date is not a violation</strong>"
+      ],
+      [
+       "<code>Inputs</code>",
+       "Only for derived entries: which facts it is derived from; if an input changes, the entry silently goes stale"
+      ],
+      [
+       "<code>Premises</code>",
+       "Only for judgments: if a premise changes, re-evaluate the entry"
+      ],
+      [
+       "<code>Changes when</code>",
+       "The invalidation condition; written only when it is not obvious"
+      ],
+      [
+       "<code>Confirmed</code>",
+       "The date this fact was last confirmed or computed. <strong>Dates may appear only in this field and in <code>Source</code> paths</strong>; a date in a sentence is narrative, which belongs to the episodic layer"
+      ],
+      [
+       "<code>Before use</code>",
+       "One pointer per line to the checks in <code>3_procedural/</code> derived from this entry"
+      ]
+     ],
+     "items": [
+      "Anything that is not a field name in this table is not written as <code>* X: </code>. <code>memdoc.py</code> reports fields that are not in this table."
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Procedural memory",
+   "path": "3_procedural/",
+   "tab": "Structure",
+   "sub": "Memory format",
+   "exclusive": true,
+   "blocks": [
+    {
+     "kind": "ul",
+     "h3": "File names",
+     "items": [
+      "<strong>File name</strong> <code>&lt;short-rule-name&gt;.md</code>. No tags."
+     ]
+    },
+    {
+     "kind": "ul",
+     "h3": "The format of a check",
+     "items": [
+      "<strong>One check per file.</strong> The file name and the title name <strong>the action that triggers it</strong> (e.g. <code>before-reporting-a-number.md</code>), so a search on file names finds it.",
+      "Each check has three fields, written as <code>* Field: </code>: <strong>When</strong> (which action is about to happen), <strong>Ask</strong> (one question you can answer on the spot), <strong>If not</strong> (what to do when the answer is no)."
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Tools",
+   "path": "memory/tools/",
+   "tab": "Rules",
+   "sub": "Tools",
+   "exclusive": true,
+   "blocks": [
+    {
+     "kind": "toolfiles",
+     "h3": "Scripts"
+    }
+   ]
+  },
+  {
+   "name": "Updates and feedback",
+   "path": "CHANGELOG.md and GitHub Issues",
+   "tab": "Updates",
+   "sub": "Updates and feedback",
+   "exclusive": true,
+   "blocks": [
+    {
+     "kind": "ul",
+     "h3": "Spec updates",
+     "items": [
+      "The kit at <code>https://github.com/cxweoth/agent-memory-kit</code> is the single source of truth for this spec and its tools. Every release raises the number in the kit's <code>VERSION</code> file by 1 and adds an entry to the kit's <code>CHANGELOG.md</code> listing which sections changed.",
+      "A <code>CHANGELOG.md</code> entry is marked <strong>Action required</strong> when the release makes agents redo or catch up on work they have already done (a migration rule changed, a rule file was renamed, the way a tool is called changed), or when there is something that must be done that the automatic sweep-line steps would not handle. Changes to wording, merges, and added explanations get an entry without that mark.",
+      "Agents read the changelog on the sweep line (rule <code>sweep-check-spec-updates.md</code>): only the entries newer than their own <code>memory/spec/VERSION</code>, doing what each Action-required entry says. The changelog takes no replies; to respond, open a GitHub Issue."
+     ]
+    },
+    {
+     "kind": "table",
+     "h3": "What to put in an issue",
+     "cols": [
+      "Part",
+      "What to write"
+     ],
+     "rows": [
+      [
+       "Title",
+       "One sentence saying what the problem is"
+      ],
+      [
+       "Body",
+       "What happened, what you expected, and which rule or file it concerns. <strong>Every line self-contained</strong>"
+      ],
+      [
+       "From",
+       "The name of the agent opening the issue"
+      ],
+      [
+       "Version",
+       "The spec version you are on: the first line of <code>memory/spec/VERSION</code>"
+      ]
+     ]
+    },
+    {
+     "kind": "ul",
+     "h3": "How to open an issue",
+     "items": [
+      "Open a GitHub Issue at <code>https://github.com/cxweoth/agent-memory-kit/issues</code>, filled in per the table above (for example with <code>gh issue create --repo cxweoth/agent-memory-kit</code>).",
+      "One issue per problem. Open one when the spec is <strong>wrong, contradicts itself, is missing a rule, or has two rules that are too alike</strong>, or when a tool does not match the spec.",
+      "Before opening one, search the existing issues for the same problem; if it is already there, add to that issue instead of opening a new one.",
+      "<strong>The issue tracker is not memory</strong>: once an issue is resolved, the conclusion goes into the spec, and the episodic about it is written by the agent that opened the issue."
+     ]
+    }
+   ]
+  }
+ ],
+ "ruleFiles": [
+  {
+   "name": "one-home-per-thing.md",
+   "layer": "Boot",
+   "intro": "Each thing has exactly one home and is said exactly once; the process stays in episodics, and upper layers keep only results"
+  },
+  {
+   "name": "reading-memory.md",
+   "layer": "Boot",
+   "intro": "When reading any kind of memory: how to find it, where to stop reading, what to do when you read something bad, and logging the rules you carry out"
+  },
+  {
+   "name": "self-contained-writing.md",
+   "layer": "Boot",
+   "intro": "Every line must make sense on its own; how to write paths and codes"
+  },
+  {
+   "name": "sweep-write-todays-episodics.md",
+   "layer": "Boot",
+   "intro": "When the sweep line says it is due, first write the day's episodics, and only then answer the user"
+  },
+  {
+   "name": "before-adding-memory.md",
+   "layer": "Triggered",
+   "intro": "Before adding any memory: whether to keep it, what its upstream is, whether each line should stay"
+  },
+  {
+   "name": "writing-memory-common.md",
+   "layer": "Triggered",
+   "intro": "When writing any kind of memory: numbers, cause and effect, tables and sections, colons, Private and Public"
+  },
+  {
+   "name": "writing-an-episodic.md",
+   "layer": "Triggered",
+   "intro": "When writing an episodic: what one episodic holds, and which fields are mandatory"
+  },
+  {
+   "name": "decision-attribution.md",
+   "layer": "Triggered",
+   "intro": "When the user makes a decision from options the agent offered: the four things the episodic must record"
+  },
+  {
+   "name": "consolidating-episodics.md",
+   "layer": "Triggered",
+   "intro": "An episodic is consolidated when it has been fully extracted, not when the work is done; first extract what belongs in the upper layers, then move it"
+  },
+  {
+   "name": "before-extracting-semantic.md",
+   "layer": "Triggered",
+   "intro": "Before extracting a fact into the semantic layer, read every file on the same topic"
+  },
+  {
+   "name": "writing-semantic-files.md",
+   "layer": "Triggered",
+   "intro": "When writing or editing a semantic file: principles, markers, tags, limits, and prohibitions"
+  },
+  {
+   "name": "rule-files-hold-only-rules.md",
+   "layer": "Triggered",
+   "intro": "When writing or editing a rule file: one rule per file, how to filter content, how to write checks, how to read counts"
+  },
+  {
+   "name": "editing-semantic-and-rule-files.md",
+   "layer": "Triggered",
+   "intro": "When editing an existing semantic file or rule file: edit in place, save the old version, check pointers, update the Summary"
+  },
+  {
+   "name": "no-delete-by-default.md",
+   "layer": "Triggered",
+   "intro": "Make append-only and safe changes directly; deleting, renaming, moving, or marking obsolete starts with a list and waits for the user to confirm"
+  },
+  {
+   "name": "delegating-memory-edits.md",
+   "layer": "Triggered",
+   "intro": "When to delegate an Add or Update of memory to a subagent, and how: isolated workspace, report categories, review, feedback"
+  },
+  {
+   "name": "sweep-check-spec-updates.md",
+   "layer": "Triggered",
+   "intro": "On the sweep line, compare the kit's VERSION with memory/spec/VERSION; if they differ, read the new CHANGELOG.md entries, do what Action-required entries say, and regenerate the spec copy"
+  }
+ ],
+ "updated": "2026-09-20",
+ "toolDocs": {
+  "memory_check.py": {
+   "desc": "<strong>Global check</strong>; one run validates everything: every file has a Summary with all its fields; <code>Visibility</code> agrees with .gitignore; the files <code>Upstream</code> points to exist, and every tag is in the vocabulary in MEMORY_ARCH.md; episodic gap: hours from the last episodic to now; average tags per file; stale derived values: a file holding an input is newer than the derived value; every file in 3_procedural/ is reachable, from CLAUDE.md or from a semantic entry's <code>Before use</code>; a check's <code>Upstream</code> and the entry's <code>Before use</code> point to each other; paths resolve; semantic file line counts; semantic file format (via memdoc.py). It catches missing fields, renames without updated pointers, misspelled tags, orphan rules, dead paths, hoarding, tag inflation, and silently stale derived values. Accepts both the ASCII and the full-width colon (every tool that parses Summary fields must).",
+   "steps": []
+  },
+  "memdoc.py": {
+   "desc": "<code>MAX_LINES</code>, <code>--selftest</code>, <code>--section</code> prints a whole section; <code>lint_semantic()</code> checks the entry format",
+   "steps": []
+  },
+  "tally.py": {
+   "desc": "Scans every episodic's <code>Procedurals used</code> and <code>Errors caught by</code>, and accumulates them into <code>3_procedural/usage.json</code>.<br>How to read its numbers. <code>Errors caught by</code>: what to watch is the share of errors not caught by the user going up, not the count going down; the agent fills this field in itself, so it is a lower bound; the <code>tool</code> source is harder evidence than the others, because the check output is an independent trace.<br>Rule counts: a rule's count is a warning signal, not grounds for keeping or removing it. Very low: take the rule out and look at it, and prune it only if it really does not matter. Very high: it should be automated; a rule needed every time is best guaranteed by a tool. Accepts both the ASCII and the full-width colon (every tool that parses Summary fields must).",
+   "steps": []
+  },
+  "gen_index.py": {
+   "desc": "Generates <code>INDEX.md</code> from every file's Summary. <strong>The index is always generated, never handwritten</strong>: the single truth lives in each file's Summary, and a handwritten index goes stale. Accepts both the ASCII and the full-width colon (every tool that parses Summary fields must). To find the files with a tag: <code>grep -l \"Tags.*&lt;tag&gt;\" memory/2_semantic/</code>.",
+   "steps": []
+  },
+  "gen_dispatch.py": {
+   "desc": "Copies each rule file's <code>Brief</code> into <code>CLAUDE.md</code>; that line is what actually gets read at boot. Accepts both the ASCII and the full-width colon (every tool that parses Summary fields must).",
+   "steps": []
+  },
+  "mem_mv.py": {
+   "desc": "Moves a memory file and updates what points to it; <strong>pointers inside 1_episodic/ and history/ are not changed</strong>: they are evidence, so let them break",
+   "steps": []
+  },
+  "mem_recall.py": {
+   "desc": "On every prompt, prints the list of semantic files and the episodics not yet consolidated",
+   "steps": []
+  },
+  "gen_spec.py": {
+   "desc": "Renders this spec (<code>spec/spec.json</code> in the kit) into the local copy under <code>memory/spec/</code>; <code>--get</code> copies the kit's <code>tools/</code> into <code>memory/tools/</code>",
+   "steps": [
+    "<strong>The kit is the single source of truth.</strong> The local spec copy is always generated from it and never edited by hand; to change a rule, open a GitHub Issue on the kit (see \"Updates and feedback\").",
+    "<strong>Get the kit</strong>: <code>git clone https://github.com/cxweoth/agent-memory-kit.git &lt;kit&gt;</code>, once; after that, <code>git pull</code> inside <code>&lt;kit&gt;</code>.",
+    "<strong>Generate the spec copy</strong>: <code>python3 &lt;kit&gt;/tools/gen_spec.py &lt;kit&gt;/spec/spec.json memory/spec</code>. One file per section; the rule table also produces rule files in <code>memory/spec/rules/</code>, and the rules marked Boot are collected in <code>memory/spec/BOOT.md</code>.",
+    "<strong>Moving the rule files into your own <code>3_procedural/</code> counts as Add or Update, and follows the rules</strong>: first write an episodic recording this import, and put it in each file's <code>Upstream</code>; save an existing file to <code>history/</code> before overwriting it; list the old rule files the new ones replace, and wait for the user to confirm.",
+    "<strong>Copy the tools</strong>: <code>python3 &lt;kit&gt;/tools/gen_spec.py --get &lt;kit&gt; memory/tools</code>. The tools go into git; look at what changed with <code>git diff</code>, and run them only after reviewing it. <strong>Never run code from the kit without reviewing it first.</strong>",
+    "<code>CLAUDE.md</code> requires reading only <code>memory/spec/BOOT.md</code>; everything else is pointed to from the dispatch table as the situation calls for it.",
+    "<strong>When to regenerate</strong>: on the sweep line, run <code>git pull</code> in <code>&lt;kit&gt;</code> and compare <code>&lt;kit&gt;/VERSION</code> with the first line of <code>memory/spec/VERSION</code>. If they differ, read the <code>CHANGELOG.md</code> entries newer than your version (which sections changed, and which entries are marked Action required), rerun <code>gen_spec.py</code>, and repeat the rule-file and tool steps above. <code>memory_check.py</code> reports when <code>memory/spec/VERSION</code> differs from the kit clone named in the <code>Kit clone</code> row of <code>MEMORY_ARCH.md</code>."
+   ]
+  },
+  "UserPromptSubmit/emit.py": {
+   "desc": "Entry point of the hook; chains the scripts under <code>UserPromptSubmit/</code>",
+   "steps": []
+  },
+  "UserPromptSubmit/now.py": {
+   "desc": "Prints the current time and time zone; the only source for anchoring time. Lives in <code>UserPromptSubmit/</code>",
+   "steps": []
+  },
+  "UserPromptSubmit/reply_check.py": {
+   "desc": "Measures the previous reply: icon count, skeleton, and the number of reads in the previous turn. Prints only; never judges. Lives in <code>UserPromptSubmit/</code>",
+   "steps": []
+  },
+  "UserPromptSubmit/sweep_due.py": {
+   "desc": "Computes whether the sweep line is due; <code>--done</code> stamps it. Lives in <code>memory/tools/UserPromptSubmit/</code>",
+   "steps": []
+  }
+ },
+ "version": 59
+}
