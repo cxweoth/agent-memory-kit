@@ -1,6 +1,6 @@
 # Memory location
 
-<!-- Generated file; do not edit by hand. Source: Memory System Specification v59; generated on 2026-10-07 -->
+<!-- Generated file; do not edit by hand. Source: Memory System Specification v60; generated on 2026-10-07 -->
 
 `Where memory lives, and each agent's own settings`
 

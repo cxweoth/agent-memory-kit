@@ -98,10 +98,6 @@ def main():
             r = r.strip().strip("`").removesuffix(".md").rsplit("/", 1)[-1]
             if not r:
                 continue
-            # An episodic may name a skill (e.g. `foo`) whose file is skill_foo.md
-            if not (MEM / "3_procedural" / f"{r}.md").exists() and \
-               (MEM / "3_procedural" / f"skill_{r}.md").exists():
-                r = f"skill_{r}"
             c[r] += 1
 
     known = {p.stem for p in (MEM / "3_procedural").glob("*.md")} - {"usage"}

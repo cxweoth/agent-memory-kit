@@ -26,6 +26,8 @@ Writing is for programs; there is no CLI for it: `set_section` / `add_section` /
 
 Paths may be relative to the repo root or to `memory/`; both work.
 """
+from __future__ import annotations
+
 import re
 import sys
 from pathlib import Path

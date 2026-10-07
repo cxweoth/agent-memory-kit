@@ -1,6 +1,6 @@
 # Semantic memory
 
-<!-- Generated file; do not edit by hand. Source: Memory System Specification v59; generated on 2026-10-07 -->
+<!-- Generated file; do not edit by hand. Source: Memory System Specification v60; generated on 2026-10-07 -->
 
 `2_semantic/`
 
@@ -16,7 +16,7 @@
 └ ## Memory Content
    └ ### Entry name = the term being looked up
        ├ Main definition, or claim
-       ├ Fields after the main definition, one * Field:  per line; see the table below
+       ├ Fields after the main definition, one * Field: per line; see the table below
        └ Before use
 ```
 

@@ -12,8 +12,7 @@ the spot. Injecting the rule text into context does not make it followed; measur
 ⚠️ Prints numbers only: never judges, never blocks, always exits 0. Once a metric
 becomes a score it stops being a metric -- what gets optimized is how things are recorded.
 
-⚠️ It reads the Claude Code transcript, not memory files, so it does not break the
-rule that hooks do not read memory file contents.
+⚠️ It reads the Claude Code transcript, not memory files.
 """
 import json, re, sys
 from pathlib import Path

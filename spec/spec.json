@@ -995,7 +995,7 @@
     {
      "kind": "ul",
      "h3": "The skeleton of Memory Content",
-     "tree": "<b># Title</b>\n<span class=\"lv\">└</span> <b>## Memory Content</b>\n   <span class=\"lv\">└</span> <b>### Entry name = the term being looked up</b>\n       <span class=\"lv\">├</span> Main definition, or claim\n       <span class=\"lv\">├</span> Fields after the main definition, one <code>* Field: </code> per line; see the table below\n       <span class=\"lv\">└</span> Before use",
+     "tree": "<b># Title</b>\n<span class=\"lv\">└</span> <b>## Memory Content</b>\n   <span class=\"lv\">└</span> <b>### Entry name = the term being looked up</b>\n       <span class=\"lv\">├</span> Main definition, or claim\n       <span class=\"lv\">├</span> Fields after the main definition, one <code>* Field:</code> per line; see the table below\n       <span class=\"lv\">└</span> Before use",
      "items": [
       "Level 3 is the <strong>entry</strong>, and <strong>its heading is the term being looked up</strong> (e.g. <code>### Empowerment</code>); a fact entry uses the phrase you would search for. <strong>Do not write a category name</strong> (definition, fact, derivation), <strong>and do not write a sentence</strong>: the answer is on the entry's first line, while the heading is the target of pointers and must stay stable.",
       "<strong>The first line of an entry is the answer</strong> (the main definition or the claim); after it, fields go one per line as <code>* Field: </code>, in the order of the table below. <strong>Only the main definition is required</strong>; any other field with no content is omitted entirely, never left empty.",
@@ -1227,14 +1227,14 @@
    "intro": "On the sweep line, compare the kit's VERSION with memory/spec/VERSION; if they differ, read the new CHANGELOG.md entries, do what Action-required entries say, and regenerate the spec copy"
   }
  ],
- "updated": "2026-09-20",
+ "updated": "2026-10-07",
  "toolDocs": {
   "memory_check.py": {
    "desc": "<strong>Global check</strong>; one run validates everything: every file has a Summary with all its fields; <code>Visibility</code> agrees with .gitignore; the files <code>Upstream</code> points to exist, and every tag is in the vocabulary in MEMORY_ARCH.md; episodic gap: hours from the last episodic to now; average tags per file; stale derived values: a file holding an input is newer than the derived value; every file in 3_procedural/ is reachable, from CLAUDE.md or from a semantic entry's <code>Before use</code>; a check's <code>Upstream</code> and the entry's <code>Before use</code> point to each other; paths resolve; semantic file line counts; semantic file format (via memdoc.py). It catches missing fields, renames without updated pointers, misspelled tags, orphan rules, dead paths, hoarding, tag inflation, and silently stale derived values. Accepts both the ASCII and the full-width colon (every tool that parses Summary fields must).",
    "steps": []
   },
   "memdoc.py": {
-   "desc": "<code>MAX_LINES</code>, <code>--selftest</code>, <code>--section</code> prints a whole section; <code>lint_semantic()</code> checks the entry format",
+   "desc": "<code>MAX_LINES</code>, <code>--selftest</code>, <code>--section</code> prints a whole section, <code>--find</code> says which sections mention a word; <code>lint_semantic()</code> checks the entry format",
    "steps": []
   },
   "tally.py": {
@@ -1286,5 +1286,5 @@
    "steps": []
   }
  },
- "version": 59
+ "version": 60
 }

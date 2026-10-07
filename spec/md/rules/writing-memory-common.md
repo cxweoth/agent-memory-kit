@@ -6,7 +6,7 @@
 - Upstream: <the episodic that recorded importing this spec>
 - Access: Triggered
 - Scope: universal
-- Updated: 2026-09-20
+- Updated: 2026-10-07
 
 ## Memory Content
 
