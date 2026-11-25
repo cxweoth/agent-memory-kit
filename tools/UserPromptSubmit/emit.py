@@ -13,8 +13,9 @@ HERE = Path(__file__).resolve().parent
 
 # Shown to the user and to the agent: the short lines. Order is the display order.
 SCRIPTS = ("now.py", "sweep_due.py", "reply_check.py")
-# Agent only: the recall list (can be long), kept off the user's screen.
-RECALL = "../mem_recall.py"
+# Agent only, kept off the user's screen: boot-rule reminders (survive compaction), the agent's
+# own to-dos that have come due, and the recall list (can be long). No setup means no output.
+AGENT_ONLY = ("boot_echo.py", "due.py", "../mem_recall.py")
 
 
 def run(name, *args):
@@ -29,7 +30,7 @@ def main():
     recall = ""
     try:
         body = "\n".join(x for x in (run(s) for s in SCRIPTS) if x)
-        recall = run(RECALL)
+        recall = "\n\n".join(x for x in (run(s) for s in AGENT_ONLY) if x)
     except Exception as e:
         body = f"⚠️ emit.py failed; time and sweep line were not checked: {e}"
     if not body:

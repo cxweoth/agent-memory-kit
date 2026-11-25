@@ -140,6 +140,52 @@ def before_use(text: str) -> str:
     return "\n".join(re.findall(r"(?m)^.*Before use.*$", text))
 
 
+_CHANGES = r"Changes when|Inputs"
+
+
+def possibly_stale():
+    """Have the paths named in an entry's `Changes when` or `Inputs` had new commits since it was confirmed?
+
+    The tool does not answer "is this entry still right" (`Changes when` is a sentence for
+    people); it only answers "does someone need to look": did a file the entry depends on
+    change. If you look and the entry still holds, update `Confirmed` and it drops off the list.
+    How: backticked strings in `Changes when` and `Inputs` that look like paths (contain `/`
+    or end in an extension) and resolve; `git log --since` counts from the day after
+    `Confirmed`, so a commit later on the confirmation day is missed. An entry with no
+    `Confirmed` uses the file's `Updated`.
+    Returns (list to look at, number of entries with such paths but no date to compare with).
+    """
+    hits, undated = [], 0
+    for f in sorted((MEM / "2_semantic").glob("*.md")):
+        text = f.read_text(encoding="utf-8")
+        file_date = re.search(r"\d{4}-\d{2}-\d{2}", summary_of(text).get("Updated", ""))
+        for m in re.finditer(r"(?ms)^#{3,6} (.+?)$\n(.*?)(?=^#{1,6} |\Z)", text):
+            entry, body = m.group(1).strip(), m.group(2)
+            fields = "\n".join(re.findall(
+                rf"(?ms)^\s*[*-]\s*(?:{_CHANGES})\s*[:：](.*?)(?=^\s*[*-]\s|^\s*$|\Z)", body))
+            paths = sorted({p.split(":")[0] for p in re.findall(r"`([^`\s]+)`", fields)
+                            if ("/" in p or re.search(r"\.\w{1,5}(:\d+)?$", p))
+                            and not skip_ptr(p)})
+            if not paths:
+                continue
+            d = re.search(r"(?m)^\s*[*-]\s*Confirmed\s*[:：].*?(\d{4}-\d{2}-\d{2})", body)
+            d = d.group(1) if d else file_date.group(0) if file_date else None
+            if not d:
+                undated += 1
+                continue
+            for p in paths:
+                base = next((b for b in BASES if (b / p).exists()), None)
+                if base is None:
+                    continue
+                r = subprocess.run(["git", "log", f"--since={d} 23:59:59", "--format=%h", "--", p],
+                                   cwd=base, capture_output=True, text=True)
+                commits = r.stdout.split()
+                if r.returncode == 0 and commits:
+                    hits.append(f"2_semantic/{f.name} > {entry}: `{p}` has {len(commits)} "
+                                f"commit(s) since {d} (latest {commits[0]})")
+    return hits, undated
+
+
 def main() -> int:
     if "-h" in sys.argv or "--help" in sys.argv:
         print(USAGE)
@@ -319,6 +365,16 @@ def main() -> int:
         print(f"{flag}hours since the latest episodic: {gap:.0f}")
     if tagcount:
         print(f"average tags per semantic file: {sum(tagcount)/len(tagcount):.1f} (a rising number is a signal)")
+    if repo:
+        look, undated = possibly_stale()
+        if look:
+            print(f"possibly stale, take a look: {len(look)} (a path in `Changes when` or `Inputs` changed "
+                  f"after `Confirmed`; the tool does not judge, so if the entry still holds, update `Confirmed`):")
+            for x in look:
+                print(f"    {x}")
+        if undated:
+            print(f"{undated} entries name paths in `Changes when` or `Inputs` but have neither `Confirmed` "
+                  f"nor a file `Updated` date, so they could not be checked")
     if wt:
         print(f"{len(wt)} subagent worktrees left behind:")
         for w in wt:

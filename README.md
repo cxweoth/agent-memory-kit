@@ -43,7 +43,7 @@ Requirements: Python 3.9+, git. No third-party packages. The hook is written for
 | `gen_spec.py` | Generates the spec copy from `spec/spec.json`; `--get` copies the kit's tools |
 | `mem_mv.py` | Moves a memory file and updates what points to it |
 | `mem_recall.py` | Lists semantic files and unconsolidated episodics for each prompt |
-| `UserPromptSubmit/` | Hook: current time, sweep-line check, reply checks |
+| `UserPromptSubmit/` | Hook: current time, sweep-line check, reply checks, boot-rule reminders, the agent's own due list |
 
 Full descriptions: [`spec/md/08_Tools.md`](spec/md/08_Tools.md).
 

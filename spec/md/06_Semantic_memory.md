@@ -1,6 +1,6 @@
 # Semantic memory
 
-<!-- Generated file; do not edit by hand. Source: Memory System Specification v60; generated on 2026-10-07 -->
+<!-- Generated file; do not edit by hand. Source: Memory System Specification v62; generated on 2026-11-25 -->
 
 `2_semantic/`
 
@@ -39,3 +39,12 @@
 | `Before use` | One pointer per line to the checks in `3_procedural/` derived from this entry |
 
 - Anything that is not a field name in this table is not written as `* X: `. `memdoc.py` reports fields that are not in this table.
+
+## How to find things
+
+- **The structure has two halves: building the table is slow and weekly; searching is fast and happens every turn.** Relying only on the list of semantic files that `mem_recall.py` prints, and guessing from a one-line brief which file to open, guesses wrong once there are many files, and misses the same meaning written in different words.
+- **Building the table** (`mem_keywords.py`): only `2_semantic/` and `3_procedural/` are indexed, never episodics or `history/`. Split into sentences → segment into words → tag parts of speech and keep only nouns and verbs → one candidate list per file → use a sentence-embedding model (`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`) to score how close each word is to its file, and keep 8 per file → use the same model to merge words of similar meaning into one group → write `memory/index/keywords.json`: each group of words maps to the files it came from. The source spec is written for Chinese text and uses `ckiplab/bert-base-chinese-ws` to segment and `ckiplab/bert-base-chinese-pos` to tag; use a segmenter and tagger for your own language.
+- **Searching** (`mem_search.py`, no model): after reading the user's message, the agent picks a few groups from the keyword table → `mem_search.py` does a literal search for every spelling in those groups → it prints the most relevant passages → the agent opens and reads those passages before answering.
+- **The keyword table is generated and never edited by hand**; if the table is wrong, fix the semantic file or rule file and rebuild. **Rebuild after the weekly extraction day has finished extracting into the semantic layer**, once a week: semantic files and rule files normally change only on that day. Measured on one agent with 52 semantic files and 83 rule files: a rebuild takes about half an hour, a search about 0.1 second.
+- The models and packages are installed in the user's home directory, not in the repo. They are the only third-party dependency, and only these two tools need them.
+- **Status: the structure is decided, but the two tools are not in this kit yet.** The quality of the keyword table has not passed, and `mem_search.py` does not yet expand a group into its spellings. They ship once they pass and are tested, and only then does the rule "Finding something in the semantic layer" change to read the table first and then search; until then, follow that rule and find files from the list.

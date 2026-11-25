@@ -1,6 +1,6 @@
 # Boot layer
 
-<!-- Generated file; do not edit by hand. Source: Memory System Specification v60; generated on 2026-10-07 -->
+<!-- Generated file; do not edit by hand. Source: Memory System Specification v62; generated on 2026-11-25 -->
 
 ## Common · Boot
 
@@ -16,13 +16,13 @@
 
 ## Episodic · Boot
 
-- 24 [Add] **When the sweep line is due, first write the day's episodics, and only then answer the user.** If you do not see the sweep line, run `python3 memory/tools/UserPromptSubmit/sweep_due.py` yourself; exit code 1 means it is due. Order: scan what happened in that span, one episodic per event, recording user decisions per `3_procedural/decision-attribution.md` → `python3 memory/tools/gen_index.py` → check for spec updates per `3_procedural/sweep-check-spec-updates.md` → finally stamp with `sweep_due.py --done`. The order may not be changed, and an empty day gets stamped too. (tools: sweep_due.py, gen_index.py)
+- 24 [Add] **When the sweep line is due, first write the day's episodics, and only then answer the user.** If you do not see the sweep line, run `python3 memory/tools/UserPromptSubmit/sweep_due.py` yourself; exit code 1 means it is due. Order: scan what happened in that span, one episodic per event, recording user decisions per `3_procedural/decision-attribution.md` → if today is the weekly extraction day, extract every episodic not yet extracted per `3_procedural/consolidating-episodics.md` → `python3 memory/tools/gen_index.py` → check for spec updates per `3_procedural/sweep-check-spec-updates.md` → finally stamp with `sweep_due.py --done`. The order may not be changed, and an empty day gets stamped too. (tools: sweep_due.py, gen_index.py)
 - 25 [Add] **A sweep line that spans more than one day is a cold start**: write only what the evidence supports, and mark it as reconstructed from evidence. You are filling in a record, not making a judgment.
 
 ## Semantic · Boot
 
 - 30 [Read] **Finding something in the semantic layer**: `Tags` and `Open when` find the file, and the heading finds the entry; read only that entry, from the top down, and stop as soon as you can answer. Read, Add, Update, and Delete all start this way.
-- 31 [Read] **Before using an entry to do something**: first open the checks its `Before use` points to; do not cite anything marked `unverified` as confirmed; if the entry has a `Changes when` condition, first check whether that condition has been met.
+- 31 [Read] **Before using an entry to do something**: first open the checks its `Before use` points to; do not cite anything marked `unverified` as confirmed; if the entry has a `Changes when` condition, first check whether that condition has been met. Do the same for any entry `memory_check.py` lists under "possibly stale, take a look"; if you look and it still holds, update its `Confirmed`. (tools: memory_check.py)
 
 ## Procedural · Boot
 

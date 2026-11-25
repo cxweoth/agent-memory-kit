@@ -72,10 +72,12 @@
      "items": [
       "<code>1_episodic/consolidated/</code>: episodics that have been fully extracted. No subfolders below it.",
       "<code>2_semantic/history/</code>, <code>3_procedural/history/</code>: old versions and retired files. Flat, with no subfolders; file name <code>&lt;original-name&gt;_&lt;YYYY-MM-DD&gt;.md</code>. <strong>At most one copy per file per day, holding the file as it was before today's first change</strong>; later changes on the same day are not saved again, because git has the intermediate states. A retired file moves in whole, overwriting any file with the same name.",
+      "<code>index/</code>: the generated search index (<code>keywords.json</code>); not memory, never edited by hand. See \"How to find things\" under Semantic memory.",
+      "<code>due.json</code>: the agent's own promised to-dos with a due date, one row per item (<code>due</code>, <code>what</code>, <code>source</code>). Not a layer of memory; it is the state file of <code>due.py</code>.",
       "<code>tools/</code>: the memory tools.",
       "<code>data/</code>: <strong>not memory</strong>; raw material."
      ],
-     "tree": "<b>memory/</b>\n<span class=\"lv\">├──</span> <b>1_episodic/</b>\n<span class=\"lv\">│   └──</span> consolidated/\n<span class=\"lv\">├──</span> <b>2_semantic/</b>\n<span class=\"lv\">│   └──</span> history/\n<span class=\"lv\">├──</span> <b>3_procedural/</b>\n<span class=\"lv\">│   └──</span> history/\n<span class=\"lv\">└──</span> <b>tools/</b>\n<b>data/</b>"
+     "tree": "<b>memory/</b>\n<span class=\"lv\">├──</span> <b>1_episodic/</b>\n<span class=\"lv\">│   └──</span> consolidated/\n<span class=\"lv\">├──</span> <b>2_semantic/</b>\n<span class=\"lv\">│   └──</span> history/\n<span class=\"lv\">├──</span> <b>3_procedural/</b>\n<span class=\"lv\">│   └──</span> history/\n<span class=\"lv\">├──</span> index/\n<span class=\"lv\">├──</span> due.json\n<span class=\"lv\">└──</span> <b>tools/</b>\n<b>data/</b>"
     },
     {
      "kind": "table",
@@ -100,6 +102,14 @@
       [
        "Paths",
        "Where this agent's memory root is; the spec copy is in <code>memory/spec/</code>"
+      ],
+      [
+       "Weekly extraction day",
+       "Which weekday's sweep line extracts the episodics into the semantic layer (rule 51)"
+      ],
+      [
+       "Echo every turn",
+       "A section whose heading contains \"Echo every turn\", one item per line, at most 6 lines: the boot rules most likely to drift after a conversation is compacted into a summary (tone, how the agent refers to itself, reply format). <code>boot_echo.py</code> prints them into the agent's context on every prompt. Short reminders only; the rules themselves still live in their rule files. No section means nothing is printed"
       ]
      ],
      "items": [
@@ -149,7 +159,7 @@
        "no": 2
       },
       {
-       "text": "<strong><code>1_episodic/</code> → <code>3_procedural/</code>: count.</strong> Compiled from repeated failures: <strong>the same kind of error twice or more</strong>; a one-off error goes only into <code>1_episodic/</code>.",
+       "text": "<strong><code>1_episodic/</code> → <code>3_procedural/</code>: count.</strong> Compiled from repeated failures: <strong>the same kind of error twice or more</strong>; a one-off error goes only into <code>1_episodic/</code>. <strong>\"Twice\" is counted in episodics: two episodics each record the error, and two on the same day count</strong>; do not wait for a second day. <code>Upstream</code> lists both episodics: their file names carry the date and <code>Occurred</code> carries the time, so a reader can tell whether they came from the same stretch.",
        "types": [
         "Procedural"
        ],
@@ -456,7 +466,7 @@
        "no": 23
       },
       {
-       "text": "<strong>When the sweep line is due, first write the day's episodics, and only then answer the user.</strong> If you do not see the sweep line, run <code>python3 memory/tools/UserPromptSubmit/sweep_due.py</code> yourself; exit code 1 means it is due. Order: scan what happened in that span, one episodic per event, recording user decisions per <code>3_procedural/decision-attribution.md</code> → <code>python3 memory/tools/gen_index.py</code> → check for spec updates per <code>3_procedural/sweep-check-spec-updates.md</code> → finally stamp with <code>sweep_due.py --done</code>. The order may not be changed, and an empty day gets stamped too.",
+       "text": "<strong>When the sweep line is due, first write the day's episodics, and only then answer the user.</strong> If you do not see the sweep line, run <code>python3 memory/tools/UserPromptSubmit/sweep_due.py</code> yourself; exit code 1 means it is due. Order: scan what happened in that span, one episodic per event, recording user decisions per <code>3_procedural/decision-attribution.md</code> → if today is the weekly extraction day, extract every episodic not yet extracted per <code>3_procedural/consolidating-episodics.md</code> → <code>python3 memory/tools/gen_index.py</code> → check for spec updates per <code>3_procedural/sweep-check-spec-updates.md</code> → finally stamp with <code>sweep_due.py --done</code>. The order may not be changed, and an empty day gets stamped too.",
        "types": [
         "Episodic"
        ],
@@ -554,7 +564,7 @@
        "no": 30
       },
       {
-       "text": "<strong>Before using an entry to do something</strong>: first open the checks its <code>Before use</code> points to; do not cite anything marked <code>unverified</code> as confirmed; if the entry has a <code>Changes when</code> condition, first check whether that condition has been met.",
+       "text": "<strong>Before using an entry to do something</strong>: first open the checks its <code>Before use</code> points to; do not cite anything marked <code>unverified</code> as confirmed; if the entry has a <code>Changes when</code> condition, first check whether that condition has been met. Do the same for any entry <code>memory_check.py</code> lists under \"possibly stale, take a look\"; if you look and it still holds, update its <code>Confirmed</code>.",
        "types": [
         "Semantic"
        ],
@@ -563,11 +573,13 @@
         "Read"
        ],
        "file": "reading-memory.md",
-       "tools": [],
+       "tools": [
+        "memory_check.py"
+       ],
        "no": 31
       },
       {
-       "text": "<strong>Mark only exceptions.</strong> Reliability: a <code>Source</code> you have not verified yourself is written as <code>unverified</code>. Type: the default is fact and is not marked; a derived entry writes <code>Inputs</code>, and a judgment writes <code>Premises</code>. Invalidation: write <code>Changes when</code> only for entries that depend on a decision or external state that can change.",
+       "text": "<strong>Mark only exceptions.</strong> Reliability: a <code>Source</code> you have not verified yourself is written as <code>unverified</code>. Type: the default is fact and is not marked; a derived entry writes <code>Inputs</code>, and a judgment writes <code>Premises</code>. Invalidation: write <code>Changes when</code> only for entries that depend on a decision or external state that can change; when what can change is a file, write its path in backticks so that <code>memory_check.py</code> can tell whether it has changed.",
        "types": [
         "Semantic"
        ],
@@ -577,7 +589,9 @@
         "Update"
        ],
        "file": "writing-semantic-files.md",
-       "tools": [],
+       "tools": [
+        "memory_check.py"
+       ],
        "no": 32
       },
       {
@@ -608,7 +622,7 @@
        "no": 34
       },
       {
-       "text": "<strong>Keep it short, and store only facts that are true now.</strong> Semantic memory gets replaced by newer facts, so however complete the details are, they will be swapped out. Unfinished work counts too: record only that it \"exists and is unresolved\", and put the day it will be handled on the calendar; do not open a separate to-do list, and do not add a new layer.",
+       "text": "<strong>Keep it short, and store only facts that are true now.</strong> Semantic memory gets replaced by newer facts, so however complete the details are, they will be swapped out. Unfinished work counts too: record only that it \"exists and is unresolved\", and do not write the day it will be handled in the semantic layer: what costs the user's time goes on the calendar, and what the agent promised and costs only its own time goes in <code>memory/due.json</code> (<code>3_procedural/promises-go-in-the-due-list.md</code>). The semantic layer does not open a to-do list of its own, and no new layer is added.",
        "types": [
         "Semantic"
        ],
@@ -846,6 +860,37 @@
         "memory_check.py"
        ],
        "no": 50
+      },
+      {
+       "text": "<strong>On one fixed sweep line every week, extract the episodics into the semantic layer, and stamp only when none are left.</strong> Which day is written in <code>MEMORY_ARCH.md</code> under \"Weekly extraction day\". On that day, after writing the day's episodics, extract every episodic still in <code>1_episodic/</code> one by one per <code>3_procedural/before-extracting-semantic.md</code> and move each into <code>1_episodic/consolidated/</code> per the previous rule; put everything that needs the user's ruling into one table and ask once, leaving those episodics where they are. Run <code>sweep_due.py --done</code> only when <code>1_episodic/</code> holds nothing but the ones awaiting a ruling.",
+       "types": [
+        "Episodic"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Update"
+       ],
+       "file": "consolidating-episodics.md",
+       "tools": [
+        "sweep_due.py",
+        "mem_mv.py"
+       ],
+       "no": 51
+      },
+      {
+       "text": "<strong>When you promise something that costs only your own time and has a due date, write it into <code>memory/due.json</code> on the spot.</strong> <code>python3 memory/tools/UserPromptSubmit/due.py --add \"&lt;due&gt;\" \"&lt;what&gt;\" \"&lt;source&gt;\"</code>, one row per item; <code>source</code> points to the episodic that records the promise, and if that is not written yet, add it on the sweep line. Items that have come due are printed into your context on every prompt: when done, run <code>due.py --done &lt;number&gt;</code> to delete the row; if you cannot do it, move the date and tell the user. Anything that costs the user's time, or needs the user's decision, does not go here: that belongs on the calendar.",
+       "types": [
+        "Common"
+       ],
+       "layer": "Triggered",
+       "ops": [
+        "Add"
+       ],
+       "file": "promises-go-in-the-due-list.md",
+       "tools": [
+        "due.py"
+       ],
+       "no": 52
       }
      ]
     }
@@ -1050,6 +1095,18 @@
      "items": [
       "Anything that is not a field name in this table is not written as <code>* X: </code>. <code>memdoc.py</code> reports fields that are not in this table."
      ]
+    },
+    {
+     "kind": "ul",
+     "h3": "How to find things",
+     "items": [
+      "<strong>The structure has two halves: building the table is slow and weekly; searching is fast and happens every turn.</strong> Relying only on the list of semantic files that <code>mem_recall.py</code> prints, and guessing from a one-line brief which file to open, guesses wrong once there are many files, and misses the same meaning written in different words.",
+      "<strong>Building the table</strong> (<code>mem_keywords.py</code>): only <code>2_semantic/</code> and <code>3_procedural/</code> are indexed, never episodics or <code>history/</code>. Split into sentences → segment into words → tag parts of speech and keep only nouns and verbs → one candidate list per file → use a sentence-embedding model (<code>sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2</code>) to score how close each word is to its file, and keep 8 per file → use the same model to merge words of similar meaning into one group → write <code>memory/index/keywords.json</code>: each group of words maps to the files it came from. The source spec is written for Chinese text and uses <code>ckiplab/bert-base-chinese-ws</code> to segment and <code>ckiplab/bert-base-chinese-pos</code> to tag; use a segmenter and tagger for your own language.",
+      "<strong>Searching</strong> (<code>mem_search.py</code>, no model): after reading the user's message, the agent picks a few groups from the keyword table → <code>mem_search.py</code> does a literal search for every spelling in those groups → it prints the most relevant passages → the agent opens and reads those passages before answering.",
+      "<strong>The keyword table is generated and never edited by hand</strong>; if the table is wrong, fix the semantic file or rule file and rebuild. <strong>Rebuild after the weekly extraction day has finished extracting into the semantic layer</strong>, once a week: semantic files and rule files normally change only on that day. Measured on one agent with 52 semantic files and 83 rule files: a rebuild takes about half an hour, a search about 0.1 second.",
+      "The models and packages are installed in the user's home directory, not in the repo. They are the only third-party dependency, and only these two tools need them.",
+      "<strong>Status: the structure is decided, but the two tools are not in this kit yet.</strong> The quality of the keyword table has not passed, and <code>mem_search.py</code> does not yet expand a group into its spellings. They ship once they pass and are tested, and only then does the rule \"Finding something in the semantic layer\" change to read the table first and then search; until then, follow that rule and find files from the list."
+     ]
     }
    ]
   },
@@ -1189,7 +1246,7 @@
   {
    "name": "consolidating-episodics.md",
    "layer": "Triggered",
-   "intro": "An episodic is consolidated when it has been fully extracted, not when the work is done; first extract what belongs in the upper layers, then move it"
+   "intro": "An episodic is consolidated when it has been fully extracted, not when the work is done; first extract what belongs in the upper layers, then move it; one fixed sweep line every week clears them all"
   },
   {
    "name": "before-extracting-semantic.md",
@@ -1225,12 +1282,17 @@
    "name": "sweep-check-spec-updates.md",
    "layer": "Triggered",
    "intro": "On the sweep line, compare the kit's VERSION with memory/spec/VERSION; if they differ, read the new CHANGELOG.md entries, do what Action-required entries say, and regenerate the spec copy"
+  },
+  {
+   "name": "promises-go-in-the-due-list.md",
+   "layer": "Triggered",
+   "intro": "When you promise the user something that costs only your own time and has a due date: write it into memory/due.json on the spot"
   }
  ],
- "updated": "2026-10-07",
+ "updated": "2026-11-25",
  "toolDocs": {
   "memory_check.py": {
-   "desc": "<strong>Global check</strong>; one run validates everything: every file has a Summary with all its fields; <code>Visibility</code> agrees with .gitignore; the files <code>Upstream</code> points to exist, and every tag is in the vocabulary in MEMORY_ARCH.md; episodic gap: hours from the last episodic to now; average tags per file; stale derived values: a file holding an input is newer than the derived value; every file in 3_procedural/ is reachable, from CLAUDE.md or from a semantic entry's <code>Before use</code>; a check's <code>Upstream</code> and the entry's <code>Before use</code> point to each other; paths resolve; semantic file line counts; semantic file format (via memdoc.py). It catches missing fields, renames without updated pointers, misspelled tags, orphan rules, dead paths, hoarding, tag inflation, and silently stale derived values. Accepts both the ASCII and the full-width colon (every tool that parses Summary fields must).",
+   "desc": "<strong>Global check</strong>; one run validates everything: every file has a Summary with all its fields; <code>Visibility</code> agrees with .gitignore; the files <code>Upstream</code> points to exist, and every tag is in the vocabulary in MEMORY_ARCH.md; episodic gap: hours from the last episodic to now; average tags per file; stale derived values: a file holding an input is newer than the derived value; every file in 3_procedural/ is reachable, from CLAUDE.md or from a semantic entry's <code>Before use</code>; a check's <code>Upstream</code> and the entry's <code>Before use</code> point to each other; paths resolve; semantic file line counts; possibly stale: whether the backticked paths in a semantic entry's <code>Changes when</code> and <code>Inputs</code> have new commits after its <code>Confirmed</code> date (<code>git log --since</code>, counted from the day after; with no <code>Confirmed</code>, the file's <code>Updated</code> is used), listed under \"possibly stale, take a look\" (the tool does not judge, and this is not an error); semantic file format (via memdoc.py). It catches missing fields, renames without updated pointers, misspelled tags, orphan rules, dead paths, hoarding, tag inflation, and silently stale derived values. Accepts both the ASCII and the full-width colon (every tool that parses Summary fields must).",
    "steps": []
   },
   "memdoc.py": {
@@ -1254,7 +1316,15 @@
    "steps": []
   },
   "mem_recall.py": {
-   "desc": "On every prompt, prints the list of semantic files and the episodics not yet consolidated",
+   "desc": "On every prompt, prints the list of semantic files and the episodics not yet consolidated. For the keyword-table route, see \"How to find things\" under Semantic memory",
+   "steps": []
+  },
+  "mem_keywords.py": {
+   "desc": "<strong>Not in the kit yet.</strong> Builds <code>memory/index/keywords.json</code> (each group of words maps to files) from <code>2_semantic/</code> and <code>3_procedural/</code>, run once after the weekly extraction day; the pipeline is in \"How to find things\" under Semantic memory",
+   "steps": []
+  },
+  "mem_search.py": {
+   "desc": "<strong>Not in the kit yet.</strong> Takes the groups picked from the keyword table, does a literal search for every spelling in each group, and prints the most relevant passages; no model",
    "steps": []
   },
   "gen_spec.py": {
@@ -1270,7 +1340,7 @@
    ]
   },
   "UserPromptSubmit/emit.py": {
-   "desc": "Entry point of the hook; chains the scripts under <code>UserPromptSubmit/</code>",
+   "desc": "Entry point of the hook; chains the scripts under <code>UserPromptSubmit/</code>. The output of <code>now.py</code>, <code>sweep_due.py</code> and <code>reply_check.py</code> goes to both the agent's context and the user's screen; the output of <code>boot_echo.py</code>, <code>due.py</code> and <code>mem_recall.py</code> goes only to the agent's context",
    "steps": []
   },
   "UserPromptSubmit/now.py": {
@@ -1284,7 +1354,15 @@
   "UserPromptSubmit/sweep_due.py": {
    "desc": "Computes whether the sweep line is due; <code>--done</code> stamps it. Lives in <code>memory/tools/UserPromptSubmit/</code>",
    "steps": []
+  },
+  "UserPromptSubmit/boot_echo.py": {
+   "desc": "On every prompt, reprints the \"Echo every turn\" section of <code>MEMORY_ARCH.md</code> into the agent's context, at most 6 lines (<code>MAX_LINES</code>); lines past the cap are not printed and the script says so; with no such section it prints nothing. The boot layer is read only once at the start, and these lines keep it from drifting after the conversation is compacted into a summary. Lives in <code>UserPromptSubmit/</code>",
+   "steps": []
+  },
+  "UserPromptSubmit/due.py": {
+   "desc": "The due list <code>memory/due.json</code>: with no arguments prints what has come due (nothing if none), <code>--all</code> lists everything, <code>--add \"&lt;due&gt;\" \"&lt;what&gt;\" \"&lt;source&gt;\"</code> adds a row, <code>--done &lt;number&gt;</code> deletes a row. <code>due</code> is local time and may be a bare date. Lives in <code>UserPromptSubmit/</code>",
+   "steps": []
   }
  },
- "version": 60
+ "version": 62
 }

@@ -1,6 +1,6 @@
 # Skeleton and Summary
 
-<!-- Generated file; do not edit by hand. Source: Memory System Specification v60; generated on 2026-10-07 -->
+<!-- Generated file; do not edit by hand. Source: Memory System Specification v62; generated on 2026-11-25 -->
 
 `The three kinds side by side`
 
